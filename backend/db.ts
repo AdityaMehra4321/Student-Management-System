@@ -1,0 +1,1040 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {
+  User,
+  StudentProfile,
+  TeacherProfile,
+  StaffProfile,
+  Department,
+  Course,
+  Subject,
+  ClassSection,
+  TimetableSlot,
+  Exam,
+  MarkRecord,
+  MarksCorrectionRequest,
+  AttendanceRecord,
+  ProfileCorrectionRequest,
+  LeaveRequest,
+  FeeRecord,
+  DocumentRecord,
+  Announcement,
+  AuditLogEntry
+} from './types.js';
+
+interface DatabaseSchema {
+  users: User[];
+  students: StudentProfile[];
+  teachers: TeacherProfile[];
+  staff: StaffProfile[];
+  departments: Department[];
+  courses: Course[];
+  subjects: Subject[];
+  classes: ClassSection[];
+  timetable: TimetableSlot[];
+  exams: Exam[];
+  marks: MarkRecord[];
+  marksCorrections: MarksCorrectionRequest[];
+  attendance: AttendanceRecord[];
+  profileCorrections: ProfileCorrectionRequest[];
+  leaveRequests: LeaveRequest[];
+  fees: FeeRecord[];
+  documents: DocumentRecord[];
+  announcements: Announcement[];
+  auditLogs: AuditLogEntry[];
+}
+
+const DB_DIR = path.resolve(process.cwd(), 'data');
+const DB_FILE = path.join(DB_DIR, 'sms_data.json');
+
+function getInitialData(): DatabaseSchema {
+  return {
+    users: [
+      {
+        id: 'usr-admin-1',
+        username: 'admin',
+        email: 'admin@sms.edu',
+        passwordHash: 'admin123',
+        role: 'ADMIN',
+        name: 'Dr. Rahul Verma',
+        avatarUrl: '/src/assets/images/avatar_admin_verma_1790658827106.jpg',
+        department: 'Administration',
+        phone: '+91 98765 00001',
+        createdAt: '2026-01-01T08:00:00.000Z',
+      },
+      {
+        id: 'usr-teacher-1',
+        username: 'teacher_sharma',
+        email: 'sharma@sms.edu',
+        passwordHash: 'teacher123',
+        role: 'TEACHER',
+        name: 'Mr. Rajesh Sharma',
+        avatarUrl: '/src/assets/images/avatar_teacher_sharma_1790658815430.jpg',
+        department: 'Computer Science',
+        phone: '+91 98765 00002',
+        createdAt: '2026-01-05T08:00:00.000Z',
+      },
+      {
+        id: 'usr-teacher-2',
+        username: 'teacher_roy',
+        email: 'roy@sms.edu',
+        passwordHash: 'teacher123',
+        role: 'TEACHER',
+        name: 'Dr. Anita Roy',
+        avatarUrl: '',
+        department: 'Computer Science',
+        phone: '+91 98765 00003',
+        createdAt: '2026-01-08T08:00:00.000Z',
+      },
+      {
+        id: 'usr-student-1',
+        username: 'student_rahul',
+        email: 'rahul.sharma@sms.edu',
+        passwordHash: 'student123',
+        role: 'STUDENT',
+        name: 'Rahul Sharma',
+        avatarUrl: '/src/assets/images/avatar_student_rahul_1790658804637.jpg',
+        department: 'Computer Science',
+        phone: '9876543210',
+        createdAt: '2026-07-15T08:00:00.000Z',
+      },
+      {
+        id: 'usr-student-2',
+        username: 'student_aman',
+        email: 'aman.gupta@sms.edu',
+        passwordHash: 'student123',
+        role: 'STUDENT',
+        name: 'Aman Gupta',
+        avatarUrl: '',
+        department: 'Computer Science',
+        phone: '9876543211',
+        createdAt: '2026-07-15T08:00:00.000Z',
+      },
+      {
+        id: 'usr-student-3',
+        username: 'student_priya',
+        email: 'priya.patel@sms.edu',
+        passwordHash: 'student123',
+        role: 'STUDENT',
+        name: 'Priya Patel',
+        avatarUrl: '',
+        department: 'Computer Science',
+        phone: '9876543212',
+        createdAt: '2026-07-15T08:00:00.000Z',
+      },
+      {
+        id: 'usr-student-4',
+        username: 'student_neha',
+        email: 'neha.singh@sms.edu',
+        passwordHash: 'student123',
+        role: 'STUDENT',
+        name: 'Neha Singh',
+        avatarUrl: '',
+        department: 'Computer Science',
+        phone: '9876543213',
+        createdAt: '2026-07-15T08:00:00.000Z',
+      },
+      {
+        id: 'usr-staff-1',
+        username: 'staff_vikram',
+        email: 'vikram.joshi@sms.edu',
+        passwordHash: 'staff123',
+        role: 'STAFF',
+        name: 'Vikram Joshi',
+        avatarUrl: '',
+        department: 'Academic Registrar',
+        phone: '+91 98765 00004',
+        createdAt: '2026-02-01T08:00:00.000Z',
+      },
+    ],
+    departments: [
+      {
+        id: 'dept-cse',
+        code: 'CSE',
+        name: 'Computer Science & Engineering',
+        headOfDepartment: 'Dr. Suresh Mehta',
+        totalStudents: 1240,
+        totalTeachers: 45,
+      },
+      {
+        id: 'dept-it',
+        code: 'IT',
+        name: 'Information Technology',
+        headOfDepartment: 'Dr. Kavita Nair',
+        totalStudents: 620,
+        totalTeachers: 28,
+      },
+      {
+        id: 'dept-ece',
+        code: 'ECE',
+        name: 'Electronics & Communication',
+        headOfDepartment: 'Dr. Anil Saxena',
+        totalStudents: 590,
+        totalTeachers: 47,
+      },
+    ],
+    courses: [
+      {
+        id: 'crs-btech-cse',
+        departmentId: 'dept-cse',
+        code: 'BTECH-CSE',
+        name: 'B.Tech in Computer Science',
+        durationYears: 4,
+        totalSemesters: 8,
+      },
+      {
+        id: 'crs-bca',
+        departmentId: 'dept-cse',
+        code: 'BCA',
+        name: 'Bachelor of Computer Applications',
+        durationYears: 3,
+        totalSemesters: 6,
+      },
+    ],
+    classes: [
+      {
+        id: 'cls-btech-5a',
+        courseId: 'crs-btech-cse',
+        departmentId: 'dept-cse',
+        name: 'B.Tech 3A (Sem 5)',
+        semester: 5,
+        section: 'A',
+        academicYear: '2026-27',
+        classTeacherId: 'tch-1',
+        classTeacherName: 'Mr. Rajesh Sharma',
+        studentCount: 4,
+      },
+      {
+        id: 'cls-btech-5b',
+        courseId: 'crs-btech-cse',
+        departmentId: 'dept-cse',
+        name: 'B.Tech 3B (Sem 5)',
+        semester: 5,
+        section: 'B',
+        academicYear: '2026-27',
+        classTeacherId: 'tch-2',
+        classTeacherName: 'Dr. Anita Roy',
+        studentCount: 0,
+      },
+      {
+        id: 'cls-btech-3a',
+        courseId: 'crs-btech-cse',
+        departmentId: 'dept-cse',
+        name: 'B.Tech 2A (Sem 3)',
+        semester: 3,
+        section: 'A',
+        academicYear: '2026-27',
+        classTeacherId: 'tch-1',
+        classTeacherName: 'Mr. Rajesh Sharma',
+        studentCount: 0,
+      },
+    ],
+    subjects: [
+      {
+        id: 'sub-dbms',
+        departmentId: 'dept-cse',
+        code: 'CS501',
+        name: 'Database Management Systems (DBMS)',
+        semester: 5,
+        credits: 4,
+        primaryTeacherId: 'tch-1',
+        primaryTeacherName: 'Mr. Rajesh Sharma',
+      },
+      {
+        id: 'sub-java',
+        departmentId: 'dept-cse',
+        code: 'CS502',
+        name: 'Java & Object Oriented Systems',
+        semester: 5,
+        credits: 4,
+        primaryTeacherId: 'tch-1',
+        primaryTeacherName: 'Mr. Rajesh Sharma',
+      },
+      {
+        id: 'sub-ds',
+        departmentId: 'dept-cse',
+        code: 'CS503',
+        name: 'Data Structures & Algorithms',
+        semester: 5,
+        credits: 4,
+        primaryTeacherId: 'tch-2',
+        primaryTeacherName: 'Dr. Anita Roy',
+      },
+      {
+        id: 'sub-cn',
+        departmentId: 'dept-cse',
+        code: 'CS504',
+        name: 'Computer Networks',
+        semester: 5,
+        credits: 4,
+        primaryTeacherId: 'tch-2',
+        primaryTeacherName: 'Dr. Anita Roy',
+      },
+      {
+        id: 'sub-sql',
+        departmentId: 'dept-cse',
+        code: 'CS301',
+        name: 'Relational Database SQL',
+        semester: 3,
+        credits: 3,
+        primaryTeacherId: 'tch-1',
+        primaryTeacherName: 'Mr. Rajesh Sharma',
+      },
+    ],
+    teachers: [
+      {
+        id: 'tch-1',
+        userId: 'usr-teacher-1',
+        teacherId: 'TCH102',
+        name: 'Mr. Rajesh Sharma',
+        email: 'sharma@sms.edu',
+        phone: '+91 98765 00002',
+        departmentId: 'dept-cse',
+        departmentName: 'Computer Science & Engineering',
+        designation: 'Senior Assistant Professor',
+        assignedClassIds: ['cls-btech-5a', 'cls-btech-5b', 'cls-btech-3a'],
+        assignedSubjectIds: ['sub-dbms', 'sub-java', 'sub-sql'],
+        status: 'ACTIVE',
+      },
+      {
+        id: 'tch-2',
+        userId: 'usr-teacher-2',
+        teacherId: 'TCH103',
+        name: 'Dr. Anita Roy',
+        email: 'roy@sms.edu',
+        phone: '+91 98765 00003',
+        departmentId: 'dept-cse',
+        departmentName: 'Computer Science & Engineering',
+        designation: 'Associate Professor',
+        assignedClassIds: ['cls-btech-5a', 'cls-btech-5b'],
+        assignedSubjectIds: ['sub-ds', 'sub-cn'],
+        status: 'ACTIVE',
+      },
+    ],
+    staff: [
+      {
+        id: 'stf-1',
+        userId: 'usr-staff-1',
+        staffId: 'STF014',
+        name: 'Vikram Joshi',
+        email: 'vikram.joshi@sms.edu',
+        phone: '+91 98765 00004',
+        departmentId: 'dept-cse',
+        departmentName: 'Administration & Registrar',
+        roleTitle: 'Academic Coordinator',
+        permissions: ['STUDENT_VIEW', 'FEE_VIEW', 'DOCUMENT_VERIFY', 'ANNOUNCEMENT_CREATE'],
+        status: 'ACTIVE',
+      },
+    ],
+    students: [
+      {
+        id: 'stu-1',
+        userId: 'usr-student-1',
+        studentId: 'STU20260045',
+        name: 'Rahul Sharma',
+        email: 'rahul.sharma@sms.edu',
+        phone: '9876543210',
+        emergencyContact: '9876543299',
+        dob: '2004-08-12',
+        address: '14/B, Lotus Boulevard, Satellite Road',
+        city: 'Ahmedabad',
+        state: 'Gujarat',
+        pincode: '380015',
+        departmentId: 'dept-cse',
+        courseId: 'crs-btech-cse',
+        departmentName: 'Computer Science & Engineering',
+        courseName: 'B.Tech in Computer Science',
+        semester: 5,
+        section: 'A',
+        admissionYear: '2024',
+        admissionNo: 'ADM-2024-0045',
+        cgpa: 8.12,
+        attendancePercentage: 87,
+        status: 'ACTIVE',
+        classId: 'cls-btech-5a',
+      },
+      {
+        id: 'stu-2',
+        userId: 'usr-student-2',
+        studentId: 'STU20260046',
+        name: 'Aman Gupta',
+        email: 'aman.gupta@sms.edu',
+        phone: '9876543211',
+        emergencyContact: '9876543298',
+        dob: '2004-11-04',
+        address: '22, Rosewood Enclave, Bodakdev',
+        city: 'Ahmedabad',
+        state: 'Gujarat',
+        pincode: '380054',
+        departmentId: 'dept-cse',
+        courseId: 'crs-btech-cse',
+        departmentName: 'Computer Science & Engineering',
+        courseName: 'B.Tech in Computer Science',
+        semester: 5,
+        section: 'A',
+        admissionYear: '2024',
+        admissionNo: 'ADM-2024-0046',
+        cgpa: 7.65,
+        attendancePercentage: 91,
+        status: 'ACTIVE',
+        classId: 'cls-btech-5a',
+      },
+      {
+        id: 'stu-3',
+        userId: 'usr-student-3',
+        studentId: 'STU20260047',
+        name: 'Priya Patel',
+        email: 'priya.patel@sms.edu',
+        phone: '9876543212',
+        emergencyContact: '9876543297',
+        dob: '2005-02-18',
+        address: '77, Orchid Heights, Prahlad Nagar',
+        city: 'Ahmedabad',
+        state: 'Gujarat',
+        pincode: '380015',
+        departmentId: 'dept-cse',
+        courseId: 'crs-btech-cse',
+        departmentName: 'Computer Science & Engineering',
+        courseName: 'B.Tech in Computer Science',
+        semester: 5,
+        section: 'A',
+        admissionYear: '2024',
+        admissionNo: 'ADM-2024-0047',
+        cgpa: 9.20,
+        attendancePercentage: 95,
+        status: 'ACTIVE',
+        classId: 'cls-btech-5a',
+      },
+      {
+        id: 'stu-4',
+        userId: 'usr-student-4',
+        studentId: 'STU20260048',
+        name: 'Neha Singh',
+        email: 'neha.singh@sms.edu',
+        phone: '9876543213',
+        emergencyContact: '9876543296',
+        dob: '2004-09-29',
+        address: '103, Silver Arc, Vastrapur',
+        city: 'Ahmedabad',
+        state: 'Gujarat',
+        pincode: '380015',
+        departmentId: 'dept-cse',
+        courseId: 'crs-btech-cse',
+        departmentName: 'Computer Science & Engineering',
+        courseName: 'B.Tech in Computer Science',
+        semester: 5,
+        section: 'A',
+        admissionYear: '2024',
+        admissionNo: 'ADM-2024-0048',
+        cgpa: 8.40,
+        attendancePercentage: 88,
+        status: 'ACTIVE',
+        classId: 'cls-btech-5a',
+      },
+    ],
+    timetable: [
+      {
+        id: 'tt-1',
+        classId: 'cls-btech-5a',
+        className: 'B.Tech 3A',
+        subjectId: 'sub-dbms',
+        subjectCode: 'CS501',
+        subjectName: 'DBMS',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        dayOfWeek: 'Monday',
+        timeSlot: '10:00 AM - 11:00 AM',
+        room: 'Lab 302',
+      },
+      {
+        id: 'tt-2',
+        classId: 'cls-btech-5b',
+        className: 'B.Tech 3B',
+        subjectId: 'sub-java',
+        subjectCode: 'CS502',
+        subjectName: 'Java',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        dayOfWeek: 'Monday',
+        timeSlot: '12:00 PM - 01:00 PM',
+        room: 'Lab 201',
+      },
+      {
+        id: 'tt-3',
+        classId: 'cls-btech-3a',
+        className: 'B.Tech 2A',
+        subjectId: 'sub-sql',
+        subjectCode: 'CS301',
+        subjectName: 'SQL Fundamentals',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        dayOfWeek: 'Monday',
+        timeSlot: '02:00 PM - 03:00 PM',
+        room: 'Room 105',
+      },
+      {
+        id: 'tt-4',
+        classId: 'cls-btech-5a',
+        className: 'B.Tech 3A',
+        subjectId: 'sub-ds',
+        subjectCode: 'CS503',
+        subjectName: 'Data Structures',
+        teacherId: 'tch-2',
+        teacherName: 'Dr. Anita Roy',
+        dayOfWeek: 'Tuesday',
+        timeSlot: '10:00 AM - 11:00 AM',
+        room: 'Hall A',
+      },
+      {
+        id: 'tt-5',
+        classId: 'cls-btech-5a',
+        className: 'B.Tech 3A',
+        subjectId: 'sub-cn',
+        subjectCode: 'CS504',
+        subjectName: 'Computer Networks',
+        teacherId: 'tch-2',
+        teacherName: 'Dr. Anita Roy',
+        dayOfWeek: 'Wednesday',
+        timeSlot: '11:00 AM - 12:00 PM',
+        room: 'Hall B',
+      },
+    ],
+    exams: [
+      {
+        id: 'ex-mid-sem-5',
+        title: 'Mid Semester Examination',
+        academicYear: '2026-27',
+        semester: 5,
+        departmentId: 'dept-cse',
+        departmentName: 'Computer Science & Engineering',
+        startDate: '2026-10-15',
+        endDate: '2026-10-25',
+        status: 'UPCOMING',
+      },
+      {
+        id: 'ex-internal-assessment-1',
+        title: 'Continuous Internal Assessment 1',
+        academicYear: '2026-27',
+        semester: 5,
+        departmentId: 'dept-cse',
+        departmentName: 'Computer Science & Engineering',
+        startDate: '2026-09-10',
+        endDate: '2026-09-20',
+        status: 'COMPLETED',
+      },
+    ],
+    marks: [
+      {
+        id: 'mrk-dbms-stu1',
+        examId: 'ex-internal-assessment-1',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectId: 'sub-dbms',
+        subjectCode: 'CS501',
+        subjectName: 'DBMS',
+        classId: 'cls-btech-5a',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        marksObtained: 82,
+        maxMarks: 100,
+        grade: 'A',
+        status: 'SUBMITTED', // LOCKED
+        submittedAt: '2026-09-21T10:30:00.000Z',
+        updatedAt: '2026-09-21T10:30:00.000Z',
+      },
+      {
+        id: 'mrk-dbms-stu2',
+        examId: 'ex-internal-assessment-1',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectId: 'sub-dbms',
+        subjectCode: 'CS501',
+        subjectName: 'DBMS',
+        classId: 'cls-btech-5a',
+        studentId: 'stu-2',
+        studentRegNo: 'STU20260046',
+        studentName: 'Aman Gupta',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        marksObtained: 76,
+        maxMarks: 100,
+        grade: 'B+',
+        status: 'SUBMITTED', // LOCKED
+        submittedAt: '2026-09-21T10:30:00.000Z',
+        updatedAt: '2026-09-21T10:30:00.000Z',
+      },
+      {
+        id: 'mrk-dbms-stu3',
+        examId: 'ex-internal-assessment-1',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectId: 'sub-dbms',
+        subjectCode: 'CS501',
+        subjectName: 'DBMS',
+        classId: 'cls-btech-5a',
+        studentId: 'stu-3',
+        studentRegNo: 'STU20260047',
+        studentName: 'Priya Patel',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        marksObtained: 91,
+        maxMarks: 100,
+        grade: 'A+',
+        status: 'SUBMITTED', // LOCKED
+        submittedAt: '2026-09-21T10:30:00.000Z',
+        updatedAt: '2026-09-21T10:30:00.000Z',
+      },
+      {
+        id: 'mrk-dbms-stu4',
+        examId: 'ex-internal-assessment-1',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectId: 'sub-dbms',
+        subjectCode: 'CS501',
+        subjectName: 'DBMS',
+        classId: 'cls-btech-5a',
+        studentId: 'stu-4',
+        studentRegNo: 'STU20260048',
+        studentName: 'Neha Singh',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        marksObtained: 84,
+        maxMarks: 100,
+        grade: 'A',
+        status: 'SUBMITTED', // LOCKED
+        submittedAt: '2026-09-21T10:30:00.000Z',
+        updatedAt: '2026-09-21T10:30:00.000Z',
+      },
+      {
+        id: 'mrk-java-stu1',
+        examId: 'ex-internal-assessment-1',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectId: 'sub-java',
+        subjectCode: 'CS502',
+        subjectName: 'Java',
+        classId: 'cls-btech-5a',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        marksObtained: 88,
+        maxMarks: 100,
+        grade: 'A+',
+        status: 'SUBMITTED', // LOCKED
+        submittedAt: '2026-09-22T14:15:00.000Z',
+        updatedAt: '2026-09-22T14:15:00.000Z',
+      },
+      {
+        id: 'mrk-java-stu2',
+        examId: 'ex-internal-assessment-1',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectId: 'sub-java',
+        subjectCode: 'CS502',
+        subjectName: 'Java',
+        classId: 'cls-btech-5a',
+        studentId: 'stu-2',
+        studentRegNo: 'STU20260046',
+        studentName: 'Aman Gupta',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        marksObtained: 80,
+        maxMarks: 100,
+        grade: 'A',
+        status: 'SUBMITTED', // LOCKED
+        submittedAt: '2026-09-22T14:15:00.000Z',
+        updatedAt: '2026-09-22T14:15:00.000Z',
+      },
+      {
+        id: 'mrk-ds-stu1',
+        examId: 'ex-internal-assessment-1',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectId: 'sub-ds',
+        subjectCode: 'CS503',
+        subjectName: 'Data Structures',
+        classId: 'cls-btech-5a',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        teacherId: 'tch-2',
+        teacherName: 'Dr. Anita Roy',
+        marksObtained: 79,
+        maxMarks: 100,
+        grade: 'B+',
+        status: 'DRAFT', // Editable!
+        updatedAt: '2026-09-23T11:00:00.000Z',
+      },
+      {
+        id: 'mrk-cn-stu1',
+        examId: 'ex-internal-assessment-1',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectId: 'sub-cn',
+        subjectCode: 'CS504',
+        subjectName: 'Computer Networks',
+        classId: 'cls-btech-5a',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        teacherId: 'tch-2',
+        teacherName: 'Dr. Anita Roy',
+        marksObtained: 91,
+        maxMarks: 100,
+        grade: 'A+',
+        status: 'SUBMITTED',
+        submittedAt: '2026-09-24T16:00:00.000Z',
+        updatedAt: '2026-09-24T16:00:00.000Z',
+      },
+    ],
+    marksCorrections: [
+      {
+        id: 'mcorr-1',
+        markRecordId: 'mrk-dbms-stu2',
+        examTitle: 'Continuous Internal Assessment 1',
+        subjectName: 'DBMS',
+        studentRegNo: 'STU20260046',
+        studentName: 'Aman Gupta',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        oldMarks: 76,
+        requestedMarks: 82,
+        reason: 'Recounting error in Question 4 schema normalization section.',
+        status: 'PENDING',
+        requestedAt: '2026-09-25T09:30:00.000Z',
+      },
+    ],
+    attendance: [
+      {
+        id: 'att-1',
+        classId: 'cls-btech-5a',
+        className: 'B.Tech 3A',
+        subjectId: 'sub-dbms',
+        subjectName: 'DBMS',
+        date: '2026-09-28',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        createdAt: '2026-09-28T10:15:00.000Z',
+        entries: [
+          { studentId: 'stu-1', studentRegNo: 'STU20260045', studentName: 'Rahul Sharma', status: 'PRESENT' },
+          { studentId: 'stu-2', studentRegNo: 'STU20260046', studentName: 'Aman Gupta', status: 'PRESENT' },
+          { studentId: 'stu-3', studentRegNo: 'STU20260047', studentName: 'Priya Patel', status: 'PRESENT' },
+          { studentId: 'stu-4', studentRegNo: 'STU20260048', studentName: 'Neha Singh', status: 'PRESENT' },
+        ],
+      },
+      {
+        id: 'att-2',
+        classId: 'cls-btech-5a',
+        className: 'B.Tech 3A',
+        subjectId: 'sub-dbms',
+        subjectName: 'DBMS',
+        date: '2026-09-27',
+        teacherId: 'tch-1',
+        teacherName: 'Mr. Rajesh Sharma',
+        createdAt: '2026-09-27T10:10:00.000Z',
+        entries: [
+          { studentId: 'stu-1', studentRegNo: 'STU20260045', studentName: 'Rahul Sharma', status: 'PRESENT' },
+          { studentId: 'stu-2', studentRegNo: 'STU20260046', studentName: 'Aman Gupta', status: 'PRESENT' },
+          { studentId: 'stu-3', studentRegNo: 'STU20260047', studentName: 'Priya Patel', status: 'ABSENT' },
+          { studentId: 'stu-4', studentRegNo: 'STU20260048', studentName: 'Neha Singh', status: 'PRESENT' },
+        ],
+      },
+    ],
+    profileCorrections: [
+      {
+        id: 'pcorr-1',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        field: 'dob',
+        fieldLabel: 'Date of Birth',
+        currentValue: '2004-08-12',
+        requestedValue: '2005-08-12',
+        reason: 'Incorrect date entered during registration. Verified against attached Aadhaar.',
+        status: 'PENDING',
+        requestedAt: '2026-09-26T14:20:00.000Z',
+      },
+    ],
+    leaveRequests: [
+      {
+        id: 'leave-1',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        classId: 'cls-btech-5a',
+        className: 'B.Tech 3A',
+        fromDate: '2026-10-02',
+        toDate: '2026-10-04',
+        totalDays: 3,
+        reason: 'Attending family wedding ceremony out of town.',
+        status: 'PENDING',
+        appliedAt: '2026-09-27T16:00:00.000Z',
+      },
+    ],
+    fees: [
+      {
+        id: 'fee-1',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        courseName: 'B.Tech in Computer Science',
+        semester: 5,
+        totalFee: 80000,
+        paidFee: 60000,
+        remainingFee: 20000,
+        dueDate: '2026-10-31',
+        status: 'PARTIAL',
+        lastPaymentDate: '2026-08-10',
+        payments: [
+          {
+            id: 'pay-1',
+            amount: 60000,
+            date: '2026-08-10',
+            receiptNo: 'REC-2026-8801',
+            paymentMode: 'Net Banking',
+          },
+        ],
+      },
+      {
+        id: 'fee-2',
+        studentId: 'stu-2',
+        studentRegNo: 'STU20260046',
+        studentName: 'Aman Gupta',
+        courseName: 'B.Tech in Computer Science',
+        semester: 5,
+        totalFee: 80000,
+        paidFee: 80000,
+        remainingFee: 0,
+        dueDate: '2026-10-31',
+        status: 'PAID',
+        lastPaymentDate: '2026-08-05',
+        payments: [
+          {
+            id: 'pay-2',
+            amount: 80000,
+            date: '2026-08-05',
+            receiptNo: 'REC-2026-8799',
+            paymentMode: 'UPI',
+          },
+        ],
+      },
+    ],
+    documents: [
+      {
+        id: 'doc-1',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        documentType: 'Aadhaar Card',
+        status: 'VERIFIED',
+        fileUrl: '/docs/sample_aadhaar.pdf',
+        uploadedAt: '2026-07-20T10:00:00.000Z',
+        verifiedAt: '2026-07-22T11:00:00.000Z',
+        verifierName: 'Vikram Joshi (Staff)',
+      },
+      {
+        id: 'doc-2',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        documentType: '10th Marksheet',
+        status: 'VERIFIED',
+        fileUrl: '/docs/sample_10th.pdf',
+        uploadedAt: '2026-07-20T10:05:00.000Z',
+        verifiedAt: '2026-07-22T11:05:00.000Z',
+        verifierName: 'Vikram Joshi (Staff)',
+      },
+      {
+        id: 'doc-3',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        documentType: '12th Marksheet',
+        status: 'VERIFIED',
+        fileUrl: '/docs/sample_12th.pdf',
+        uploadedAt: '2026-07-20T10:10:00.000Z',
+        verifiedAt: '2026-07-22T11:10:00.000Z',
+        verifierName: 'Vikram Joshi (Staff)',
+      },
+      {
+        id: 'doc-4',
+        studentId: 'stu-1',
+        studentRegNo: 'STU20260045',
+        studentName: 'Rahul Sharma',
+        documentType: 'Transfer Certificate',
+        status: 'PENDING',
+        fileUrl: '/docs/sample_tc.pdf',
+        uploadedAt: '2026-09-15T09:00:00.000Z',
+        notes: 'Original hard copy awaiting registrar verification stamp',
+      },
+    ],
+    announcements: [
+      {
+        id: 'anc-1',
+        title: 'Semester Examination Timetable Published',
+        content: 'The Mid Semester Examination 2026-27 schedule for B.Tech Semester 5 is now published. All students must download hall tickets before 10th October.',
+        targetRole: 'ALL',
+        authorName: 'Dr. Rahul Verma',
+        authorRole: 'ADMIN',
+        createdAt: '2026-09-25T10:00:00.000Z',
+        priority: 'HIGH',
+      },
+      {
+        id: 'anc-2',
+        title: 'Fee Payment Reminder for Odd Semester 2026',
+        content: 'Students with pending tuition fee balances are requested to clear payments by 31st October 2026 to avoid late penalty charges.',
+        targetRole: 'STUDENT',
+        authorName: 'Vikram Joshi',
+        authorRole: 'STAFF',
+        createdAt: '2026-09-24T12:00:00.000Z',
+        priority: 'NORMAL',
+      },
+      {
+        id: 'anc-3',
+        title: 'Faculty Meeting: NAAC Accreditation Review',
+        content: 'All department heads and teaching faculty must assemble in Auditorium 1 on Friday at 3:30 PM for the NAAC audit review.',
+        targetRole: 'TEACHER',
+        authorName: 'Dr. Rahul Verma',
+        authorRole: 'ADMIN',
+        createdAt: '2026-09-27T09:00:00.000Z',
+        priority: 'URGENT',
+      },
+    ],
+    auditLogs: [
+      {
+        id: 'log-1',
+        timestamp: '2026-09-28T10:30:15.000Z',
+        actorId: 'usr-admin-1',
+        actorName: 'Dr. Rahul Verma',
+        actorRole: 'ADMIN',
+        action: 'UPDATE_STUDENT_STATUS',
+        entityType: 'STUDENT',
+        entityId: 'stu-1',
+        details: 'Admin verified academic clearance for Rahul Sharma',
+        ip: '127.0.0.1',
+      },
+      {
+        id: 'log-2',
+        timestamp: '2026-09-28T10:15:00.000Z',
+        actorId: 'usr-teacher-1',
+        actorName: 'Mr. Rajesh Sharma',
+        actorRole: 'TEACHER',
+        action: 'TAKE_ATTENDANCE',
+        entityType: 'ATTENDANCE',
+        entityId: 'att-1',
+        details: 'Teacher marked attendance for B.Tech 3A DBMS: 4 Present, 0 Absent',
+        ip: '127.0.0.1',
+      },
+      {
+        id: 'log-3',
+        timestamp: '2026-09-25T09:30:00.000Z',
+        actorId: 'usr-teacher-1',
+        actorName: 'Mr. Rajesh Sharma',
+        actorRole: 'TEACHER',
+        action: 'SUBMIT_MARKS_CORRECTION',
+        entityType: 'MARKS_CORRECTION',
+        entityId: 'mcorr-1',
+        details: 'Submitted mark correction request for Aman Gupta (DBMS: 76 -> 82)',
+        ip: '127.0.0.1',
+      },
+      {
+        id: 'log-4',
+        timestamp: '2026-09-21T10:30:00.000Z',
+        actorId: 'usr-teacher-1',
+        actorName: 'Mr. Rajesh Sharma',
+        actorRole: 'TEACHER',
+        action: 'LOCK_SUBMITTED_MARKS',
+        entityType: 'MARKS',
+        entityId: 'sub-dbms',
+        details: 'Final marks submitted and locked for CS501 DBMS (4 records)',
+        ip: '127.0.0.1',
+      },
+    ],
+  };
+}
+
+class Database {
+  private data: DatabaseSchema;
+
+  constructor() {
+    this.data = this.load();
+  }
+
+  private load(): DatabaseSchema {
+    try {
+      if (!fs.existsSync(DB_DIR)) {
+        fs.mkdirSync(DB_DIR, { recursive: true });
+      }
+      if (fs.existsSync(DB_FILE)) {
+        const raw = fs.readFileSync(DB_FILE, 'utf-8');
+        const parsed = JSON.parse(raw);
+        // Ensure all collections exist
+        const initial = getInitialData();
+        return { ...initial, ...parsed };
+      }
+    } catch (err) {
+      console.error('Failed to load database file, creating fresh initial data:', err);
+    }
+    const fresh = getInitialData();
+    this.saveDirect(fresh);
+    return fresh;
+  }
+
+  private saveDirect(dataToSave: DatabaseSchema) {
+    try {
+      if (!fs.existsSync(DB_DIR)) {
+        fs.mkdirSync(DB_DIR, { recursive: true });
+      }
+      fs.writeFileSync(DB_FILE, JSON.stringify(dataToSave, null, 2), 'utf-8');
+    } catch (err) {
+      console.error('Failed to write database file:', err);
+    }
+  }
+
+  public save() {
+    this.saveDirect(this.data);
+  }
+
+  public getRaw(): DatabaseSchema {
+    return this.data;
+  }
+
+  // Audit Logging
+  public logAudit(actorId: string, actorName: string, actorRole: any, action: string, entityType: string, entityId: string, details: string, ip: string = '127.0.0.1') {
+    const entry: AuditLogEntry = {
+      id: 'log-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      timestamp: new Date().toISOString(),
+      actorId,
+      actorName,
+      actorRole,
+      action,
+      entityType,
+      entityId,
+      details,
+      ip,
+    };
+    this.data.auditLogs.unshift(entry);
+    // keep maximum 500 audit logs
+    if (this.data.auditLogs.length > 500) {
+      this.data.auditLogs = this.data.auditLogs.slice(0, 500);
+    }
+    this.save();
+    return entry;
+  }
+
+  // Helper generators
+  public generateStudentId(): string {
+    const year = new Date().getFullYear();
+    const count = this.data.students.length + 1;
+    return `STU${year}${String(count).padStart(4, '0')}`;
+  }
+
+  public generateTeacherId(): string {
+    const count = this.data.teachers.length + 1;
+    return `TCH${String(count).padStart(3, '0')}`;
+  }
+
+  public generateStaffId(): string {
+    const count = this.data.staff.length + 1;
+    return `STF${String(count).padStart(3, '0')}`;
+  }
+}
+
+export const db = new Database();

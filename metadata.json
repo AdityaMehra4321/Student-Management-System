@@ -1,0 +1,6 @@
+{
+  "name": "Role-Based Student Management System",
+  "description": "Comprehensive role-based Student Management System featuring dedicated Admin, Teacher, and Student portals with strict backend permission enforcement, marks locking, attendance, exam management, and profile correction workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
